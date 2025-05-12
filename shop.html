@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Apply Inter font globally */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Basic styling for better presentation */
+        .item-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .item-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        /* Simple loading overlay */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8); /* Lighter overlay */
+            color: #333; /* Darker text */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            font-size: 1.2em;
+            backdrop-filter: blur(5px); /* Optional blur effect */
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-800">Game Store</h1>
+            <p class="text-gray-600 mt-2">Select an item to purchase</p>
+            </header>
+
+        <main>
+            <h2 class="text-2xl font-semibold text-gray-700 mb-6">Coin Packs</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                <div class="item-card bg-white rounded-lg shadow-md overflow-hidden p-5 flex flex-col">
+                    <img src="https://placehold.co/300x200/FBBF24/ffffff?text=100+Coins"
+                         alt="Small Coin Pack"
+                         class="w-full h-40 object-cover rounded-md mb-4"
+                         onerror="this.onerror=null; this.src='https://placehold.co/300x200/cccccc/ffffff?text=Image+Error';">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Small Coin Pack</h3>
+                    <p class="text-gray-600 text-sm mb-4 flex-grow">Get 100 shiny coins!</p>
+                    <p class="text-lg font-bold text-indigo-600 mb-4">$0.99</p>
+                    <button onclick="handlePurchase('coin_pack_100', '0.99', 'USD')" class="mt-auto w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200 ease-in-out">
+                        Buy Now
+                    </button>
+                </div>
+
+                <div class="item-card bg-white rounded-lg shadow-md overflow-hidden p-5 flex flex-col">
+                    <img src="https://placehold.co/300x200/60A5FA/ffffff?text=550+Coins"
+                         alt="Medium Coin Pack"
+                         class="w-full h-40 object-cover rounded-md mb-4"
+                         onerror="this.onerror=null; this.src='https://placehold.co/300x200/cccccc/ffffff?text=Image+Error';">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Medium Coin Pack</h3>
+                    <p class="text-gray-600 text-sm mb-4 flex-grow">Get 550 coins - great value!</p>
+                    <p class="text-lg font-bold text-indigo-600 mb-4">$4.99</p>
+                     <button onclick="handlePurchase('coin_pack_550', '4.99', 'USD')" class="mt-auto w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200 ease-in-out">
+                        Buy Now
+                    </button>
+                </div>
+
+                <div class="item-card bg-white rounded-lg shadow-md overflow-hidden p-5 flex flex-col">
+                    <img src="https://placehold.co/300x200/34D399/ffffff?text=1200+Coins"
+                         alt="Large Coin Pack"
+                         class="w-full h-40 object-cover rounded-md mb-4"
+                         onerror="this.onerror=null; this.src='https://placehold.co/300x200/cccccc/ffffff?text=Image+Error';">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Large Coin Pack</h3>
+                    <p class="text-gray-600 text-sm mb-4 flex-grow">Get 1200 coins!</p>
+                    <p class="text-lg font-bold text-indigo-600 mb-4">$9.99</p>
+                     <button onclick="handlePurchase('coin_pack_1200', '9.99', 'USD')" class="mt-auto w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200 ease-in-out">
+                        Buy Now
+                    </button>
+                </div>
+
+                 </div>
+        </main>
+
+        <footer class="text-center mt-12 py-4 border-t border-gray-300">
+            <p class="text-gray-500 text-sm">&copy; <span id="year"></span> Your Game Name. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Set current year in footer
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // --- Configuration ---
+        // TODO: Replace 'YOUR_TITLE_ID' with your actual PlayFab Title ID
+        const playfabTitleId = "19F830";
+        // TODO: Replace 'PayPal' with the ProviderName from PlayFab Add-on setup (likely 'PayPal' or 'PayPalExpress')
+        const defaultProviderName = "PayPal";
+        // TODO: Replace 'initiateWebPurchase' if you named your Cloud Script function differently
+        const cloudScriptFunctionName = "initiateWebPurchase";
+        // --- End Configuration ---
+
+
+        // Function to show a loading indicator
+        function showLoading(message = 'Processing purchase...') {
+            // Remove existing overlay if any
+            hideLoading();
+            const overlay = document.createElement('div');
+            overlay.id = 'loading-overlay';
+            overlay.textContent = message;
+            document.body.appendChild(overlay);
+        }
+
+        // Function to hide the loading indicator
+        function hideLoading() {
+            const loadingOverlay = document.getElementById('loading-overlay');
+            if (loadingOverlay) {
+                loadingOverlay.remove();
+            }
+        }
+
+        // Main function to handle the purchase button click
+        async function handlePurchase(itemId, price, currencyCode = 'USD') {
+            console.log(`Attempting purchase for item: ${itemId}, Price: ${price}, Currency: ${currencyCode}`);
+
+            // 1. Get Player Info from URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const playerId = urlParams.get('playerId');
+            const sessionTicket = urlParams.get('sessionTicket');
+
+            // 2. Validate Inputs
+            if (!playerId) {
+                alert("Error: Player ID not found in URL. Please return to the game and try again.");
+                console.error("Missing playerId in URL query string");
+                return;
+            }
+            if (!sessionTicket) {
+                alert("Error: Session information missing. Please return to the game and try again.");
+                console.error("Missing sessionTicket in URL query string");
+                return;
+            }
+            if (!playfabTitleId || playfabTitleId === "YOUR_TITLE_ID") {
+                 alert("Configuration error: PlayFab Title ID is not set in the webpage script.");
+                 console.error("PlayFab Title ID is not configured in the script.");
+                 return;
+            }
+            if (!defaultProviderName) {
+                 alert("Configuration error: Payment Provider Name is not set.");
+                 console.error("Payment Provider Name is not configured in the script.");
+                 return;
+            }
+
+            console.log(`Player ID: ${playerId}, Item ID: ${itemId}, Provider: ${defaultProviderName}`);
+
+            // 3. Prepare Cloud Script Request
+            const cloudScriptUrl = `https://${playfabTitleId}.playfabapi.com/Client/ExecuteCloudScript`;
+            const requestBody = {
+                FunctionName: cloudScriptFunctionName,
+                FunctionParameter: { // Parameters expected by the Cloud Script function
+                    playerId: playerId,
+                    itemId: itemId,
+                    currencyCode: currencyCode,
+                    providerName: defaultProviderName // Using the configured provider name
+                },
+                GeneratePlayStreamEvent: true // Optional: Generates an event for tracking
+            };
+
+            // 4. Execute Cloud Script via Fetch API
+            showLoading('Contacting server...'); // Show loading indicator
+            try {
+                const response = await fetch(cloudScriptUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // Use the session ticket obtained from the URL for authentication
+                        'X-Authentication': sessionTicket
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                // Check if the HTTP request itself was successful
+                if (!response.ok) {
+                    // Try to parse error details from PlayFab response
+                    const errorData = await response.json().catch(() => null); // Avoid breaking if response isn't JSON
+                    console.error("Cloud Script execution HTTP error:", response.status, response.statusText, errorData);
+                    const errorMessage = errorData?.errorMessage || `Server returned status ${response.status}. Please try again.`;
+                    alert(`Error initiating purchase: ${errorMessage}`);
+                    hideLoading();
+                    return;
+                }
+
+                // Parse the successful JSON response from ExecuteCloudScript
+                const result = await response.json();
+                console.log("Cloud Script Response:", result);
+
+                // Check the structure of the PlayFab response
+                if (result.code === 200 && result.data && result.data.FunctionResult) {
+                    const functionResult = result.data.FunctionResult; // This is the object returned by your Cloud Script function
+
+                    // Check if the Cloud Script function itself reported success and returned the redirect URL
+                    if (functionResult.success && functionResult.paymentProviderRedirectUrl) {
+                        console.log("Cloud Script successful, redirecting to PayPal...");
+                        // SUCCESS! Redirect the user's browser to the payment provider's page
+                        showLoading('Redirecting to payment provider...');
+                        window.location.href = functionResult.paymentProviderRedirectUrl;
+                        // No need to hide loading here, the page will navigate away
+                    } else {
+                        // The Cloud Script ran but returned an error or unexpected data
+                        console.error("Error reported by Cloud Script function:", functionResult.error || functionResult);
+                        const scriptErrorMessage = functionResult.error?.errorMessage || functionResult.error?.message || 'Purchase failed due to a server logic error.';
+                        alert(`Purchase failed: ${scriptErrorMessage}`);
+                        hideLoading();
+                    }
+                } else {
+                     // The ExecuteCloudScript call succeeded at HTTP level, but PlayFab reported an API error
+                     console.error("Unexpected response structure or error from ExecuteCloudScript:", result);
+                     const playfabErrorMessage = result.errorMessage || 'Unexpected server response format.';
+                     alert(`Error processing request: ${playfabErrorMessage}`);
+                     hideLoading();
+                }
+
+            } catch (error) {
+                // Catch network errors or issues with the fetch call itself
+                console.error("Error during fetch call to Cloud Script:", error);
+                alert("An network error occurred while trying to start the purchase. Please check your connection and try again.");
+                hideLoading();
+            }
+        }
+    </script>
+
+</body>
+</html>
